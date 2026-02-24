@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>투어라이브 맛집 데이터베이스 😎</title>
+    <style>
+        /* 기본 스타일 및 색상 변수 */
+        :root {
+            --bg-color: #fdfcf0;
+            --white: #ffffff;
+            --text-main: #2d3436;
+            --text-sub: #636e72;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            --hover-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+
+            /* 도시별 파스텔 톤 */
+            --color-seoul: #a2d2ff;
+            /* 파스텔 블루 */
+            --color-busan: #caf0f8;
+            /* 파스텔 하늘 */
+            --color-jeju: #ffb7b2;
+            /* 파스텔 오렌지/핑크 */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 80px;
+        }
+
+        /* 헤더 섹션 */
+        header {
+            background-color: var(--white);
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        h1 {
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: var(--text-main);
+            letter-spacing: -1px;
+        }
+
+        /* 도시 선택 버튼 */
+        .city-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+        }
+
+        .city-btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .city-btn:hover {
+            transform: translateY(-3px);
+            filter: brightness(0.95);
+        }
+
+        .btn-seoul {
+            background-color: var(--color-seoul);
+            color: #fff;
+        }
+
+        .btn-busan {
+            background-color: var(--color-busan);
+            color: var(--text-main);
+        }
+
+        .btn-jeju {
+            background-color: var(--color-jeju);
+            color: #fff;
+        }
+
+        /* 검색창 */
+        .search-container {
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+            background: #fafafa;
+        }
+
+        input[type="text"]:focus {
+            border-color: #ddd;
+        }
+
+        /* 메인 콘텐츠 */
+        main {
+            max-width: 1200px;
+            margin: 3rem auto 0;
+            padding: 0 2rem;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        /* 맛집 카드 디자인 */
+        .card {
+            background-color: var(--white);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            border: 1px solid #f8f8f8;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .card-name {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .card-menu {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 1rem;
+        }
+
+        .card-stats {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1.2rem;
+        }
+
+        .rating {
+            color: #ff9f43;
+            font-weight: 700;
+            font-size: 1.1rem;
+            background: #fff9f0;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .reviews {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+        }
+
+        .card-feature {
+            font-size: 0.9rem;
+            color: #666;
+            background-color: #f1f7ff;
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .card-address {
+            font-size: 0.8rem;
+            color: #adb5bd;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+            margin-top: auto;
+        }
+
+        .no-result {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 5rem;
+            color: var(--text-sub);
+            font-size: 1.2rem;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            .city-buttons {
+                flex-wrap: wrap;
+            }
+
+            .city-btn {
+                flex: 1;
+                min-width: 100px;
+                padding: 0.6rem 1rem;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <header>
+        <h1>투어라이브 맛집 데이터베이스 😎</h1>
+        <div class="city-buttons">
+            <button class="city-btn btn-seoul" onclick="filterCity('서울')">서울</button>
+            <button class="city-btn btn-busan" onclick="filterCity('부산')">부산</button>
+            <button class="city-btn btn-jeju" onclick="filterCity('제주')">제주</button>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="식당 이름이나 메뉴로 검색..." autocomplete="off">
+        </div>
+    </header>
+
+    <main>
+        <div id="resultGrid" class="result-grid">
+            <div class="no-result">위의 도시 버튼을 클릭하거나 검색해 보세요!</div>
+        </div>
+    </main>
+
+    <script>
+        // 1. Supabase 설정 (개발자님: .env 파일에 적어둔 URL과 Key를 여기에 입력해 주세요)
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const searchInput = document.getElementById('searchInput');
+        const resultGrid = document.getElementById('resultGrid');
+
+        // 메인 렌더링 함수
+        function renderCards(data) {
+            resultGrid.innerHTML = '';
+
+            if (!data || data.length === 0) {
+                resultGrid.innerHTML = `<div class="no-result">데이터가 없거나 검색 결과가 없습니다.</div>`;
+                return;
+            }
+
+            data.forEach(rest => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => window.open(rest.map_url || rest.mapUrl, '_blank');
+
+                card.innerHTML = `
+                    <div class="card-name">${rest.name}</div>
+                    <div class="card-menu">${rest.menu}</div>
+                    <div class="card-stats">
+                        <span class="rating">⭐ ${rest.rating}</span>
+                        <span class="reviews">리뷰 ${rest.review_count || rest.reviews}개</span>
+                    </div>
+                    <div class="card-feature">${getFeatureText(rest.city)} 대표 맛집</div>
+                    <div class="card-address">${rest.address}</div>
+                `;
+                resultGrid.appendChild(card);
+            });
+        }
+
+        // 도시별 특징 텍스트 생성
+        function getFeatureText(city) {
+            const features = {
+                "서울": "전통과 현대가 어우러진",
+                "부산": "시원한 바다 맛 가득한",
+                "제주": "청정 자연의 식재료로 만든"
+            };
+            return features[city] || "";
+        }
+
+        // 도시 버튼 필터링 (DB에서 실시간 필터링)
+        async function filterCity(city) {
+            searchInput.value = '';
+
+            const { data, error } = await _supabase
+                .from('restaurants')
+                .select('*')
+                .eq('city', city)
+                .order('rating', { ascending: false });
+
+            if (error) {
+                console.error('필터링 중 오류 발생:', error);
+                return;
+            }
+
+            renderCards(data);
+        }
+
+        // 검색 기능 (실시간 DB 검색)
+        searchInput.addEventListener('input', async () => {
+            const query = searchInput.value.trim().toLowerCase();
+            if (!query) {
+                resultGrid.innerHTML = `<div class="no-result">가고 싶은 도시를 선택하거나 검색해 보세요!</div>`;
+                return;
+            }
+
+            const { data, error } = await _supabase
+                .from('restaurants')
+                .select('*')
+                .or(`name.ilike.%${query}%,menu.ilike.%${query}%,city.ilike.%${query}%`)
+                .order('rating', { ascending: false });
+
+            if (error) {
+                console.error('검색 중 오류 발생:', error);
+                return;
+            }
+
+            renderCards(data);
+        });
+    </script>
+    </script>
+</body>
+
+</html>
