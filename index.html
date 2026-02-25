@@ -96,6 +96,11 @@
             color: #fff;
         }
 
+        .btn-paris {
+            background-color: #f7d794; /* 파스텔 골드 */
+            color: #574b90;
+        }
+
         /* 검색창 */
         .search-container {
             max-width: 500px;
@@ -240,6 +245,7 @@
             <button class="city-btn btn-seoul" onclick="filterCity('서울')">서울</button>
             <button class="city-btn btn-busan" onclick="filterCity('부산')">부산</button>
             <button class="city-btn btn-jeju" onclick="filterCity('제주')">제주</button>
+            <button class="city-btn btn-paris" onclick="filterCity('파리')">파리</button>
         </div>
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="식당 이름이나 메뉴로 검색..." autocomplete="off">
@@ -253,7 +259,7 @@
     </main>
 
     <script>
-        // 1. Supabase 설정 (수정됨)
+        // 1. Supabase 설정
         const SUPABASE_URL = 'https://esgpftlrkcbqxvntaouw.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Z5FCbKvyKgeC_KQo9aP86A_khiRiuQZ';
         const { createClient } = supabase;
@@ -295,17 +301,24 @@
             const features = {
                 "서울": "전통과 현대가 어우러진",
                 "부산": "시원한 바다 맛 가득한",
-                "제주": "청정 자연의 식재료로 만든"
+                "제주": "청정 자연의 식재료로 만든",
+                "파리": "낭만 가득한 미식의 도시"
             };
             return features[city] || "";
         }
 
-        // 도시 버튼 필터링 (DB에서 실시간 필터링)
+        // 도시 버튼 필터링 (DB에서 실시간 필터링 + 로그 수집)
         async function filterCity(city) {
             searchInput.value = '';
 
-            // 1. 클릭 로그 저장 (옵션)
-            await _supabase.from('city_clicks').insert([{ city: city }]);
+            // 1. 클릭 로그 저장
+            const { error: logError } = await _supabase
+                .from('city_clicks')
+                .insert([{ city: city }]);
+
+            if (logError) {
+                console.error('로그 저장 중 오류 발생:', logError);
+            }
 
             // 2. 맛집 데이터 필터링
             const { data, error } = await _supabase
